@@ -1,0 +1,28 @@
+{
+  "jobs": [
+    {
+      "id": "daily-morning",
+      "name": "Daily Morning Check",
+      "schedule": "0 9 * * 1-5",
+      "tz": "America/Denver",
+      "enabled": false,
+      "timeoutSeconds": 120,
+      "model": "sonnet",
+      "discordChannel": "YOUR_CHANNEL_ID",
+      "announceResult": true,
+      "message": "Good morning! Run a quick health check: check disk space with 'df -h /', check if the cron runner is running with 'ps aux | grep cron-runner | grep -v grep'. Post a brief morning status to Discord. Keep it short — 3-5 bullet points max."
+    },
+    {
+      "id": "weekly-summary",
+      "name": "Weekly Summary",
+      "schedule": "0 18 * * 5",
+      "tz": "America/Denver",
+      "enabled": false,
+      "timeoutSeconds": 180,
+      "model": "sonnet",
+      "discordChannel": "YOUR_CHANNEL_ID",
+      "announceResult": true,
+      "message": "It's Friday! Write a brief weekly summary. Read memory/active-threads.md and today's daily note if they exist. Summarize what was accomplished this week and what's still in progress. Post to Discord. Keep it conversational, not corporate."
+    }
+  ]
+}

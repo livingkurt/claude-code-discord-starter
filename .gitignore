@@ -1,0 +1,14 @@
+# Auth — never commit these
+config/.env
+config/claude.json
+claude-data/
+workspace/.env
+
+# Logs and generated files
+workspace/crons/logs/
+workspace/node_modules/
+workspace/memory/
+workspace/data/current-model.json
+
+# Mac
+.DS_Store

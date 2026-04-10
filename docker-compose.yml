@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  claude-bot:
+    build: .
+    container_name: claude-bot
+    restart: always
+    volumes:
+      # Workspace — your bot's files, scripts, memory, crons
+      - ./workspace:/workspace
+      # Claude auth — copy your ~/.claude.json here before first run
+      - ./config/claude.json:/home/node/.claude.json:ro
+      # Claude plugin state (Discord channel access, paired channels, etc.)
+      - ./claude-data:/home/node/.claude
+      # start.sh and restart-loop.sh — editable without rebuilding
+      - ./start.sh:/start.sh:ro
+      - ./restart-loop.sh:/restart-loop.sh:ro
+    env_file:
+      - ./config/.env
+    environment:
+      - HOME=/home/node
+      - WORKSPACE_DIR=/workspace
+    healthcheck:
+      test: ["CMD", "tmux", "has-session", "-t", "claude"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+# To run:
+#   1. Copy your ~/.claude.json to ./config/claude.json
+#   2. Fill in ./config/.env with your Discord tokens
+#   3. docker-compose build --no-cache
+#   4. docker-compose up -d
+#   5. docker logs claude-bot -f   (watch startup)
+#
+# On Unraid: always use "docker-compose" (hyphenated), not "docker compose"
