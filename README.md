@@ -12,7 +12,7 @@ A ready-to-run Discord bot powered by Claude Code CLI. Uses your Claude Max subs
 |------|-------------|
 | `Dockerfile` + `docker-compose.yml` | Container setup |
 | `start.sh` | Launches Claude + cron runner + slash handler in tmux |
-| `restart-loop.sh` | Keeps Claude running, restarts if it exits |
+| `restart-loop.sh` | Keeps Claude running, resumes session context on restart |
 | `workspace/scripts/cron-runner.js` | Runs scheduled jobs from `crons/jobs.json` |
 | `workspace/scripts/discord-slash-handler.js` | Handles `/status`, `/model`, `/cron`, `/ask` |
 | `workspace/scripts/discord-slash-register.js` | Registers slash commands with Discord (run once) |
@@ -249,6 +249,12 @@ docker exec claude-bot tmux new-window -t claude -n cron \
   "while true; do node /workspace/scripts/cron-runner.js 2>&1; sleep 10; done"
 ```
 
+**Cron jobs exit 0 with no output (silent failure)**
+This happens when the container's PATH is stripped and the cron runner can't find the `claude` binary. The runner now auto-resolves the binary path at startup and will log which binary it's using. Set `CLAUDE_BIN=/usr/local/bin/claude` in `config/.env` to force a specific path.
+
+**Model switch loses conversation context**
+The updated `restart-loop.sh` saves the session ID and resumes via `--resume` on next startup. If context is still lost, check that `data/interactive-session-id` is being written after each session.
+
 ---
 
 ## File Structure
@@ -273,9 +279,28 @@ claude-code-starter/
     ├── data/
     │   └── current-model.json      # active model preference
     ├── memory/                     # daily notes, threads (gitignored)
+    ├── data/
+    │   ├── current-model.json          # active model preference
+    │   └── interactive-session-id      # last session UUID for --resume
+    ├── memory/                         # daily notes, threads (gitignored)
     └── scripts/
         ├── cron-runner.js
         ├── discord-post.js
         ├── discord-slash-handler.js
         └── discord-slash-register.js
 ```
+
+---
+
+## Related Tools
+
+These are companion repos from [The Agent Crafting Table](https://github.com/The-Agent-Crafting-Table) that extend this starter:
+
+| Repo | What it adds |
+|------|-------------|
+| [fleet-discord](https://github.com/The-Agent-Crafting-Table/fleet-discord) | Run multiple Claude sessions sharing one bot — peer routing, busy isolation, self-respawn |
+| [cron-framework](https://github.com/The-Agent-Crafting-Table/cron-framework) | Structured cron scoring, auto-resolve, pre-flight patch validation |
+| [evolution-loop](https://github.com/The-Agent-Crafting-Table/evolution-loop) | Closed-loop prompt refinement — detect failures, propose variants, human approves |
+| [injection-scan](https://github.com/The-Agent-Crafting-Table/injection-scan) | Prompt injection scanner for external content (URLs, emails, API responses) |
+| [activity-guard](https://github.com/The-Agent-Crafting-Table/activity-guard) | Rate limiter for agent actions — prevents spam commits, API hammering |
+| [auto-memory-extract](https://github.com/The-Agent-Crafting-Table/auto-memory-extract) | Promotes facts from daily notes into categorized reference files |
